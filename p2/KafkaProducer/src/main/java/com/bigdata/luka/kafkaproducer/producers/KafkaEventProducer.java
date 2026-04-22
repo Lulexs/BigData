@@ -1,4 +1,4 @@
-package com.bigdata.luka.kafkaproducer;
+package com.bigdata.luka.kafkaproducer.producers;
 
 import com.bigdata.luka.kafkaproducer.model.VehicleEmissionEvent;
 import lombok.RequiredArgsConstructor;
