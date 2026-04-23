@@ -4,6 +4,7 @@ import com.bigdata.luka.sparkstreaming.analysis.AnalysisContext;
 import com.bigdata.luka.sparkstreaming.analysis.AnalysisRegistry;
 import com.bigdata.luka.sparkstreaming.analysis.StreamingAnalysis;
 import com.bigdata.luka.sparkstreaming.analysis.impl.PollutionAnalysis;
+import com.bigdata.luka.sparkstreaming.analysis.impl.TrafficAnalysis;
 import com.bigdata.luka.sparkstreaming.config.AppConfig;
 import com.bigdata.luka.sparkstreaming.parser.EventParser;
 import com.bigdata.luka.sparkstreaming.sink.KafkaResultSink;
@@ -38,7 +39,8 @@ public class SparkStreamingApplication {
 		AnalysisContext ctx = new AnalysisContext(spark, emissions, fcd);
 
 		List<StreamingAnalysis> analyses = List.of(
-				new PollutionAnalysis()
+				new PollutionAnalysis(),
+				new TrafficAnalysis()
 		);
 
 		AnalysisRegistry registry = new AnalysisRegistry(analyses);

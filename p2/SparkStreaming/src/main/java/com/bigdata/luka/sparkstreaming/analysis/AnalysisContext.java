@@ -13,6 +13,7 @@ public class AnalysisContext {
         this.spark = spark;
         this.emissions = emissions;
         this.fcd = fcd;
+
     }
 
     public SparkSession spark() {

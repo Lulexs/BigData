@@ -11,3 +11,5 @@ public interface StreamingAnalysis {
     Dataset<Row> analyze(AnalysisContext ctx, WindowConfig windowConfig);
 
 }
+
+
