@@ -9,9 +9,9 @@ import com.bigdata.luka.sparkstreaming.geo.SpatialEntities;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
+import static org.apache.spark.sql.functions.approx_count_distinct;
 import static org.apache.spark.sql.functions.broadcast;
 import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.countDistinct;
 import static org.apache.spark.sql.functions.lit;
 
 public class TrafficAnalysis implements StreamingAnalysis {
@@ -48,7 +48,7 @@ public class TrafficAnalysis implements StreamingAnalysis {
                         col("p.lat"),
                         col("p.lon")
                 )
-                .agg(countDistinct("f.vehicleId").alias("vehicleCount"))
+                .agg(approx_count_distinct("f.vehicleId").alias("vehicleCount"))
                 .select(
                         col("window.start").alias("windowStart"),
                         col("window.end").alias("windowEnd"),
