@@ -1,4 +1,13 @@
 package com.bigdata.luka.kafkaproducer.model;
 
-public class KafkaEvent {
+import java.math.BigDecimal;
+
+public interface KafkaEvent {
+
+    String getKey();
+
+    String getVehicleId();
+
+    BigDecimal getTimestamp();
+
 }

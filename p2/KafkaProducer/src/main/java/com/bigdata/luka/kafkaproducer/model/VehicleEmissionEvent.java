@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VehicleEmissionEvent {
+public class VehicleEmissionEvent implements KafkaEvent {
 
     private BigDecimal timestep;
 
@@ -37,4 +37,19 @@ public class VehicleEmissionEvent {
     private BigDecimal angle;
     private BigDecimal x;
     private BigDecimal y;
+
+    @Override
+    public String getKey() {
+        return id;
+    }
+
+    @Override
+    public String getVehicleId() {
+        return id;
+    }
+
+    @Override
+    public BigDecimal getTimestamp() {
+        return timestep;
+    }
 }

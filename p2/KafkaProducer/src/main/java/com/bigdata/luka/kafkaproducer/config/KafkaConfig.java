@@ -1,6 +1,6 @@
 package com.bigdata.luka.kafkaproducer.config;
 
-import com.bigdata.luka.kafkaproducer.model.VehicleEmissionEvent;
+import com.bigdata.luka.kafkaproducer.model.KafkaEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class KafkaConfig {
 
     @Bean
-    public ProducerFactory<String, VehicleEmissionEvent> producerFactory() {
+    public ProducerFactory<String, KafkaEvent> producerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9094");
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -27,7 +27,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, VehicleEmissionEvent> kafkaTemplate() {
+    public KafkaTemplate<String, KafkaEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }
