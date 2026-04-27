@@ -22,4 +22,14 @@ public class WindowConfig {
     public boolean isTumbling() {
         return "tumbling".equalsIgnoreCase(type);
     }
+
+    public Long length() {
+        return Long.parseLong(length);
+    }
+
+    public Long slide() {
+        return Long.parseLong(slide);
+    }
+
+    public Long watermarkDelay() { return Long.parseLong(watermarkDelay); }
 }
