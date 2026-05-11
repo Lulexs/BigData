@@ -50,7 +50,40 @@
 	</dependencies>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>shaded</shadedClassifierName>
 
+							<relocations>
+								<relocation>
+									<pattern>com.fasterxml.jackson</pattern>
+									<shadedPattern>com.bigdata.luka.shaded.jackson</shadedPattern>
+								</relocation>
+							</relocations>
+
+							<finalName>FlinkStreaming-assembly</finalName>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.bigdata.luka.flinkstreaming.FlinkStreamingApplication</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 
 </project>

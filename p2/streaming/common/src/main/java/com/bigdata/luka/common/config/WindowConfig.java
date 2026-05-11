@@ -24,12 +24,22 @@ public class WindowConfig {
     }
 
     public Long length() {
-        return Long.parseLong(length);
+        return parseSeconds(length);
     }
 
     public Long slide() {
-        return Long.parseLong(slide);
+        return parseSeconds(slide);
     }
 
-    public Long watermarkDelay() { return Long.parseLong(watermarkDelay); }
+    public Long watermarkDelay() { return parseSeconds(watermarkDelay); }
+
+    private Long parseSeconds(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        int firstSpace = trimmed.indexOf(' ');
+        String number = firstSpace >= 0 ? trimmed.substring(0, firstSpace) : trimmed;
+        return Long.parseLong(number);
+    }
 }

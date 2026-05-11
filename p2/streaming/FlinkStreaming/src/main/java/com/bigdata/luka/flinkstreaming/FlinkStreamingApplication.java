@@ -4,6 +4,8 @@ import com.bigdata.luka.common.config.AppConfig;
 import com.bigdata.luka.flinkstreaming.analysis.AnalysisContext;
 import com.bigdata.luka.flinkstreaming.analysis.AnalysisRegistry;
 import com.bigdata.luka.flinkstreaming.analysis.StreamingAnalysis;
+import com.bigdata.luka.flinkstreaming.analysis.impl.PollutionAnalysis;
+import com.bigdata.luka.flinkstreaming.analysis.impl.TrafficAnalysis;
 import com.bigdata.luka.flinkstreaming.parser.EmissionEvent;
 import com.bigdata.luka.flinkstreaming.parser.FcdEvent;
 import com.bigdata.luka.flinkstreaming.parser.ParserOutputs;
@@ -11,14 +13,14 @@ import com.bigdata.luka.flinkstreaming.parser.UnifiedEventParser;
 import com.bigdata.luka.flinkstreaming.sink.KafkaResultSink;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.configuration.CheckpointingOptions;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class FlinkStreamingApplication {
@@ -26,19 +28,23 @@ public class FlinkStreamingApplication {
 	public static void main(String[] args) throws Exception {
 		AppConfig cfg = new AppConfig();
 
-		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		Configuration flinkConfig = new Configuration();
+		flinkConfig.set(CheckpointingOptions.CHECKPOINT_STORAGE, "filesystem");
+		flinkConfig.set(CheckpointingOptions.CHECKPOINTS_DIRECTORY, cfg.checkpointLocation());
+
+		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(flinkConfig);
 		env.enableCheckpointing(5000);
 
 		KafkaSource<String> source = KafkaSource.<String>builder()
 				.setBootstrapServers(cfg.bootstrapServers())
 				.setTopics(cfg.inputTopics())
 				.setGroupId("flink-consumer")
-				.setStartingOffsets(OffsetsInitializer.earliest())
+				.setStartingOffsets(startingOffsets(cfg.startingOffsets()))
 				.setValueOnlyDeserializer(new SimpleStringSchema())
 				.build();
 
 		DataStream<String> kafkaStream  = env.fromSource(source,
-				WatermarkStrategy.forBoundedOutOfOrderness(Duration.of(cfg.windowConfig().watermarkDelay(), ChronoUnit.SECONDS)),
+				WatermarkStrategy.noWatermarks(),
 				"Kafka Source");
 		SingleOutputStreamOperator<Void> parsed = kafkaStream.process(new UnifiedEventParser());
 
@@ -47,7 +53,10 @@ public class FlinkStreamingApplication {
 
 		AnalysisContext ctx = new AnalysisContext(env, emissions, fcd);
 
-		List<StreamingAnalysis<?, ?>> analyses = List.of();
+		List<StreamingAnalysis<?, ?>> analyses = List.of(
+				new PollutionAnalysis(),
+				new TrafficAnalysis()
+		);
 		AnalysisRegistry registry = new AnalysisRegistry(analyses);
 		List<StreamingAnalysis<?, ?>> enabledAnalyses = registry.getAll(cfg.analysisNames());
 
@@ -62,6 +71,16 @@ public class FlinkStreamingApplication {
 
 		env.execute(cfg.appName());
 
+	}
+
+	private static OffsetsInitializer startingOffsets(String value) {
+		if ("latest".equalsIgnoreCase(value)) {
+			return OffsetsInitializer.latest();
+		}
+		if ("earliest".equalsIgnoreCase(value)) {
+			return OffsetsInitializer.earliest();
+		}
+		throw new IllegalArgumentException("Unsupported kafka.startingOffsets: " + value);
 	}
 
 }

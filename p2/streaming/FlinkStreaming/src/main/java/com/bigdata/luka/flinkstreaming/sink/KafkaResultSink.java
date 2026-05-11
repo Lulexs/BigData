@@ -1,15 +1,15 @@
 package com.bigdata.luka.flinkstreaming.sink;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-import java.nio.charset.StandardCharsets;
-
 public final class KafkaResultSink {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final SimpleStringSchema STRING_SCHEMA = new SimpleStringSchema();
 
     private KafkaResultSink() {
     }
@@ -24,10 +24,14 @@ public final class KafkaResultSink {
                 .setBootstrapServers(bootstrapServers)
                 .setRecordSerializer((KafkaRecordSerializationSchema<T>) (element, context, timestamp) -> {
                     try {
-                        byte[] value = MAPPER.writeValueAsBytes(element);
-                        byte[] key = analysisName.getBytes(StandardCharsets.UTF_8);
+                        String key = analysisName;
+                        String value = MAPPER.writeValueAsString(element);
 
-                        return new ProducerRecord<>(topic, key, value);
+                        return new ProducerRecord<>(
+                                topic,
+                                STRING_SCHEMA.serialize(key),
+                                STRING_SCHEMA.serialize(value)
+                        );
 
                     } catch (Exception e) {
                         throw new RuntimeException("Serialization failed", e);

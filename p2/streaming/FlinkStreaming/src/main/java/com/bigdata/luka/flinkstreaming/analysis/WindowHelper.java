@@ -15,10 +15,10 @@ public final class WindowHelper {
         /* This utility class should not be instantiated */
     }
 
-    public static WindowAssigner<?, TimeWindow> create(WindowConfig cfg) {
+    public static <T> WindowAssigner<T, TimeWindow> create(WindowConfig cfg) {
         if (cfg.isSliding()) {
-            return SlidingEventTimeWindows.of(Duration.of(cfg.length(), ChronoUnit.SECONDS), Duration.of(cfg.slide(), ChronoUnit.SECONDS));
+            return (WindowAssigner<T, TimeWindow>) SlidingEventTimeWindows.of(Duration.of(cfg.length(), ChronoUnit.SECONDS), Duration.of(cfg.slide(), ChronoUnit.SECONDS));
         }
-        return TumblingEventTimeWindows.of(Duration.of(cfg.length(), ChronoUnit.SECONDS));
+        return (WindowAssigner<T, TimeWindow>) TumblingEventTimeWindows.of(Duration.of(cfg.length(), ChronoUnit.SECONDS));
     }
 }
