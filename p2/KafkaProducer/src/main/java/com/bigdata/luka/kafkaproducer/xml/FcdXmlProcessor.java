@@ -13,6 +13,9 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +35,8 @@ public class FcdXmlProcessor {
         try (InputStream inputStream = new ClassPathResource("fcd.xml").getInputStream()) {
             XMLStreamReader reader = factory.createXMLStreamReader(inputStream);
 
-            BigDecimal currentTime = null;
+            Long currentBaseTime = LocalDateTime.of(2026, Month.MAY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC).toEpochMilli();
+            Long currentTime = null;
             List<VehicleFcdEvent> currentBatch = new ArrayList<>();
             long totalCount = 0;
 
@@ -50,7 +54,7 @@ public class FcdXmlProcessor {
                             currentBatch = new ArrayList<>();
                         }
 
-                        currentTime = decimalAttr(reader, "time");
+                        currentTime = currentBaseTime + decimalAttr(reader, "time").longValue() * 1000;
                     } else if ("vehicle".equals(localName)) {
                         VehicleFcdEvent payload = VehicleFcdEvent.builder()
                                 .timestep(currentTime)
@@ -83,7 +87,7 @@ public class FcdXmlProcessor {
         }
     }
 
-    private void publishBatch(BigDecimal timestep, List<VehicleFcdEvent> batch) {
+    private void publishBatch(Long timestep, List<VehicleFcdEvent> batch) {
         log.info("Publishing FCD timestep={} with {} vehicles", timestep, batch.size());
 
         for (VehicleFcdEvent payload : batch) {

@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class VehicleEmissionEvent implements KafkaEvent {
 
-    private BigDecimal timestep;
+    private Long timestep;
 
     private String id;
     private String eclass;
@@ -49,7 +49,7 @@ public class VehicleEmissionEvent implements KafkaEvent {
     }
 
     @Override
-    public BigDecimal getTimestamp() {
+    public Long getTimestamp() {
         return timestep;
     }
 }

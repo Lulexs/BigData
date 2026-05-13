@@ -13,6 +13,9 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +35,8 @@ public class EmissionXmlProcessor {
         try (InputStream inputStream = new ClassPathResource("emissions.xml").getInputStream()) {
             XMLStreamReader reader = factory.createXMLStreamReader(inputStream);
 
-            BigDecimal currentTime = null;
+            Long currentBaseTime = LocalDateTime.of(2026, Month.MAY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC).toEpochMilli();
+            Long currentTime = null;
             List<VehicleEmissionEvent> currentBatch = new ArrayList<>();
             long totalCount = 0;
 
@@ -50,7 +54,7 @@ public class EmissionXmlProcessor {
                             currentBatch = new ArrayList<>();
                         }
 
-                        currentTime = decimalAttr(reader, "time");
+                        currentTime = currentBaseTime + decimalAttr(reader, "time").longValue() * 1000;
                     } else if ("vehicle".equals(localName)) {
                         VehicleEmissionEvent payload = VehicleEmissionEvent.builder()
                                 .timestep(currentTime)
@@ -93,7 +97,7 @@ public class EmissionXmlProcessor {
         }
     }
 
-    private void publishBatch(BigDecimal timestep, List<VehicleEmissionEvent> batch) {
+    private void publishBatch(Long timestep, List<VehicleEmissionEvent> batch) {
         log.info("Publishing EMISSION timestep={} with {} vehicles", timestep, batch.size());
 
         for (VehicleEmissionEvent payload : batch) {
@@ -108,5 +112,10 @@ public class EmissionXmlProcessor {
     private BigDecimal decimalAttr(XMLStreamReader reader, String attrName) {
         String value = reader.getAttributeValue(null, attrName);
         return value == null || value.isBlank() ? null : new BigDecimal(value);
+    }
+
+    private Long longAttr(XMLStreamReader reader, String attrName) {
+        String value = reader.getAttributeValue(null, attrName);
+        return value == null || value.isBlank() ? null : Long.parseLong(value);
     }
 }

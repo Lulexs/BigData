@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AppConfig {
@@ -19,10 +20,9 @@ public class AppConfig {
         return config.getString("kafka.bootstrap.servers");
     }
 
-    public List<String> inputTopics() {
-        return Arrays.stream(config.getString("kafka.input.topics").split(","))
-                .map(String::trim)
-                .collect(Collectors.toList());
+    public Map<String, String> analysisToInputTopic() {
+        return Arrays.stream(config.getString("analysis.topic.mappings").split(";"))
+                .collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
     }
 
     public String outputTopic() {
