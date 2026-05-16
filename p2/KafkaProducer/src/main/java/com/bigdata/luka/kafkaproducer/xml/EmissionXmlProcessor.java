@@ -50,7 +50,7 @@ public class EmissionXmlProcessor {
                         if (currentTime != null && !currentBatch.isEmpty()) {
                             publishBatch(currentTime, currentBatch);
                             totalCount += currentBatch.size();
-                            Thread.sleep(1000);
+//                            Thread.sleep(1000);
                             currentBatch = new ArrayList<>();
                         }
 
