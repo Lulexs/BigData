@@ -10,6 +10,7 @@ public class AnalysesRegistry {
 
     public AnalysesRegistry() {
         analyses.add(new TrafficAnalysis());
+        analyses.add(new PollutionAnalysis());
     }
 
     public List<Analysis> getActiveAnalyses(List<String> names) {
