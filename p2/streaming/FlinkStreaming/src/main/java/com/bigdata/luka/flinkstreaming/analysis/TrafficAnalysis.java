@@ -51,9 +51,7 @@ public class TrafficAnalysis implements Analysis {
 
         DataStream<TrafficWindowResult> result = vehiclesNearLocations
                 .keyBy(new LocationKeySelector())
-                .window(
-                        buildWindowAssigner(windowConfig)
-                )
+                .window(buildWindowAssigner(windowConfig))
                 .aggregate(
                         new DistinctVehicleCountAggregate(),
                         new AddWindowAndLocationFunction()

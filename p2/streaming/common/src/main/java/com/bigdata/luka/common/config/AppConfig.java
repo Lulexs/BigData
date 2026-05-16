@@ -43,10 +43,6 @@ public class AppConfig {
                 .collect(Collectors.toList());
     }
 
-    public String triggerInterval() {
-        return config.getString("trigger.interval");
-    }
-
     public WindowConfig windowConfig() {
         return new WindowConfig(
                 config.getString("window.type"),
