@@ -9,13 +9,14 @@ import org.apache.spark.sql.SparkSession;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class SparkStreamingApplication {
 
     public static void main(String[] args) throws Exception {
         AppConfig appConfig = new AppConfig();
-
+        Random random = new Random();
         SparkSession sparkSession = SparkSession.builder()
                 .appName(appConfig.appName())
                 .getOrCreate();
@@ -36,13 +37,13 @@ public class SparkStreamingApplication {
         List<Analysis> activeAnalyses = analysesRegistry.getActiveAnalyses(appConfig.analysisNames());
 
         for (Analysis analysis : activeAnalyses) {
-            Dataset<Row> analysisResults = analysis.analyze(baseStream);
+            Dataset<Row> analysisResults = analysis.analyze(sparkSession, baseStream, appConfig.windowConfig());
 
             analysisResults.writeStream()
                     .format("kafka")
                     .option("topic", appConfig.outputTopic())
                     .option("kafka.bootstrap.servers", appConfig.bootstrapServers())
-                    .option("checkpointLocation", appConfig.checkpointLocation() + "/" + analysis.getAnalysisName())
+                    .option("checkpointLocation", appConfig.checkpointLocation() + "/" + analysis.getAnalysisName() + "/" + random.nextInt(1000))
                     .outputMode("append")
                     .start();
         }
