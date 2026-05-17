@@ -8,19 +8,34 @@ def mode_1(args):
     df = pd.read_csv(FILEPATH)
 
     if args.filter is not None:
-        for filter in args.filter.split(","):
-            if filter.find("=") != -1:
-                col, val = filter.split("=")
-                print(col, val)
-                df = df[df[col] == val]
-            elif filter.find(">") != -1:
-                col, val = filter.split(">")
-                df = df[df[col] > int(val)]   
-            elif filter.find("<") != -1:
-                col, val = filter.split("<")
-                df = df[df[col] < int(val)]
+        for filter_expr in args.filter.split(","):
+            if "=" in filter_expr:
+                col, val = filter_expr.split("=", 1)
+                col = col.strip()
+                val = val.strip()
+
+                df = df[
+                    df[col].astype(str).str.lower() == val.lower()
+                ]
+
+            elif ">" in filter_expr:
+                col, val = filter_expr.split(">", 1)
+                col = col.strip()
+                val = float(val.strip())
+
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+                df = df[df[col] > val]
+
+            elif "<" in filter_expr:
+                col, val = filter_expr.split("<", 1)
+                col = col.strip()
+                val = float(val.strip())
+
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+                df = df[df[col] < val]
+
             else:
-                print(f"WARN: Unrecognized filter {filter}" )
+                print(f"WARN: Unrecognized filter {filter_expr}")
 
     if args.sort is not None:
         sorts = []
@@ -32,7 +47,13 @@ def mode_1(args):
 
         df = df.sort_values(by=sorts, ascending=ascs)
 
-    df.to_csv(args.output)
+    if args.count is not None:
+        count_df = pd.DataFrame({
+            "count": [len(df)]
+        })
+        count_df.to_csv(args.output, index=False)
+    else:
+        df.to_csv(args.output, index=False)
 
 
 def mode_2(args):
